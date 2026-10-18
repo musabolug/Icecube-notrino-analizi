@@ -4,7 +4,7 @@ IceCube'un halka açık 10 yıllık iz (track) verisiyle (2008–2018, ~1.1 mily
 
 **Yazar:** Musab Bera Mansur Oluğ — AYBÜ Matematik, 1. sınıf
 
-**Proje sitesi:** https://KULLANICI_ADIN.github.io/icecube-notrino-analizi/ (etkileşimli açıklamalarla)  
+**Proje sitesi:** https://musabolug.github.io/Icecube-notrino-analizi/ (etkileşimli açıklamalarla)  
 **Rapor:** `IceCube 10 Yıllık Veriyle Nötrino Nokta Kaynak Analizi.pdf`
 
 ## Öne çıkan sonuçlar
