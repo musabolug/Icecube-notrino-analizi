@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>IceCube Nötrino Kaynak Avı</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: tek sütun okuma akışı (~68ch), şekiller geniş plaka olarak taşar; hero'da dedektör olay görüntüsü */
+:root{
+  --bg:#eef2f5;          /* kutup buzu beyazı */
+  --surface:#ffffff;
+  --ink:#0f1c2b;
+  --muted:#4d5d6f;
+  --line:#cfd8e1;
+  --cherenkov:#2350d8;   /* Çerenkov ışığı mavisi */
+  --cherenkov-soft:#dbe4fb;
+  --signal:#c4372f;      /* sinyal / sıcak nokta */
+  --ok:#2c7a4b;
+  --canvas-bg:#0d1826;
+  --font-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --font-body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --font-data:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --measure:68ch;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0b131d;--surface:#121d2a;--ink:#e3eaf2;--muted:#9aabbd;--line:#253547;
+  --cherenkov:#7ea2ff;--cherenkov-soft:#1a2a4a;--signal:#ff7a6e;--ok:#6fcf97;--canvas-bg:#060c14;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0b131d;--surface:#121d2a;--ink:#e3eaf2;--muted:#9aabbd;--line:#253547;
+  --cherenkov:#7ea2ff;--cherenkov-soft:#1a2a4a;--signal:#ff7a6e;--ok:#6fcf97;--canvas-bg:#060c14;color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:1.08rem;line-height:1.62;padding-inline:20px;padding-block:0 64px}
+.wrap{max-width:1040px;margin:0 auto}
+.col{max-width:var(--measure)}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;line-height:1.08;margin:0}
+h1{font-size:clamp(2.3rem,6vw,4.3rem);font-weight:800;font-stretch:118%;letter-spacing:-.01em}
+h2{font-size:clamp(1.55rem,3.2vw,2.2rem);font-weight:750;font-stretch:112%}
+h3{font-size:1.1rem;font-weight:700;font-stretch:100%}
+p{margin:0}
+a{color:var(--cherenkov)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--cherenkov);outline-offset:3px}
+.eyebrow{font-family:var(--font-data);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--font-data);font-variant-numeric:tabular-nums}
+
+/* hero */
+header.hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:40px;align-items:center;padding-block:56px 40px}
+.hero-text{display:flex;flex-direction:column;gap:18px;min-width:0}
+.hero-text .lede{font-size:1.18rem;color:var(--muted);max-width:46ch}
+.byline{font-family:var(--font-data);font-size:.82rem;color:var(--muted)}
+.event{position:relative;background:var(--canvas-bg);border-radius:6px;overflow:hidden;aspect-ratio:4/5;max-width:100%}
+.event canvas{width:100%;height:100%;display:block}
+.event figcaption{position:absolute;left:12px;right:12px;bottom:10px;display:flex;justify-content:space-between;gap:12px;align-items:end;font-family:var(--font-data);font-size:.7rem;color:#9fb3c8}
+.event button{font:inherit;color:#dfe8f3;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:4px;padding:5px 9px;cursor:pointer}
+.event button:hover{background:rgba(255,255,255,.16)}
+.timebar{display:flex;align-items:center;gap:6px}
+.timebar i{display:block;width:70px;height:6px;border-radius:3px;background:linear-gradient(90deg,#ff3b30,#ffcc00,#34c759,#00b7ff,#5856d6)}
+
+/* sayılar */
+.figures{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border-block:1px solid var(--line);margin-block:8px 0}
+.figures div{background:var(--bg);padding:18px 16px 16px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.figures b{font-family:var(--font-display);font-stretch:115%;font-size:clamp(1.5rem,3vw,2.1rem);font-weight:800;font-variant-numeric:tabular-nums}
+.figures span{font-size:.88rem;color:var(--muted);line-height:1.35}
+
+section{padding-block:56px 8px;display:flex;flex-direction:column;gap:20px}
+section .col{display:flex;flex-direction:column;gap:16px}
+
+/* formül */
+.formula{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px 20px;font-family:var(--font-data);font-size:.95rem;overflow-x:auto;white-space:nowrap;display:flex;flex-direction:column;gap:6px}
+.formula small{font-family:var(--font-body);white-space:normal;color:var(--muted);font-size:.9rem}
+
+/* aşamalar */
+ol.stages{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:0;border-top:1px solid var(--line)}
+ol.stages li{display:grid;grid-template-columns:2.6em minmax(0,1fr);gap:8px;padding:12px 12px 12px 0;border-bottom:1px solid var(--line);font-size:.95rem;line-height:1.4}
+ol.stages .n{font-family:var(--font-data);color:var(--cherenkov);font-size:.82rem;padding-top:2px}
+ol.stages b{font-family:var(--font-display);font-weight:650;display:block}
+ol.stages span{color:var(--muted);font-size:.88rem}
+
+/* şekiller */
+figure.plate{margin:0;display:flex;flex-direction:column;gap:10px}
+figure.plate .img{background:#fff;border:1px solid var(--line);border-radius:4px;padding:8px}
+figure.plate img{display:block;width:100%;height:auto}
+figure.plate figcaption{font-size:.92rem;color:var(--muted);max-width:var(--measure)}
+figure.plate figcaption b{color:var(--ink);font-family:var(--font-display);font-weight:700}
+.pair{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:28px;align-items:start}
+.pair .col{min-width:0}
+
+/* tablo */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:620px;font-size:.93rem}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{font-family:var(--font-data);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+tbody tr:last-child td{border-bottom:0}
+td.num{font-family:var(--font-data);font-variant-numeric:tabular-nums;white-space:nowrap}
+td .ref{display:block;font-size:.78rem;color:var(--muted);font-family:var(--font-data)}
+.chip{display:inline-block;font-family:var(--font-data);font-size:.7rem;padding:2px 7px;border-radius:99px;border:1px solid currentColor;margin-left:6px;vertical-align:1px}
+.chip.ok{color:var(--ok)}.chip.null{color:var(--muted)}
+
+/* sağlamlık */
+.bars{display:flex;flex-direction:column;gap:7px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px}
+.bar{display:grid;grid-template-columns:minmax(0,12rem) minmax(0,1fr) 4.6rem;gap:12px;align-items:center;font-size:.88rem}
+.bar .lab{color:var(--muted);text-align:right;line-height:1.25}
+.bar .track{position:relative;height:16px;background:var(--cherenkov-soft);border-radius:2px}
+.bar .fill{position:absolute;inset:0 auto 0 0;background:var(--cherenkov);border-radius:2px}
+.bar.pos .fill{background:var(--signal)}
+.bar.def .fill{background:var(--ink)}
+.bar .ref-line{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);opacity:.55}
+.bar .v{font-family:var(--font-data);font-variant-numeric:tabular-nums;font-size:.85rem}
+.axis{display:grid;grid-template-columns:minmax(0,12rem) minmax(0,1fr) 4.6rem;gap:12px;font-family:var(--font-data);font-size:.72rem;color:var(--muted)}
+.axis .ticks{position:relative;height:14px}
+.axis .ticks span{position:absolute;transform:translateX(-50%)}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:.84rem;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:0}
+
+.nulls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}
+.nulls>div{display:flex;flex-direction:column;gap:10px;min-width:0}
+.big-stat{font-family:var(--font-display);font-stretch:115%;font-weight:800;font-size:2rem;font-variant-numeric:tabular-nums}
+
+ul.plain{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:8px}
+ol.refs{margin:0;padding-left:1.4em;font-size:.92rem;display:flex;flex-direction:column;gap:6px;color:var(--muted)}
+ol.refs i{color:var(--ink)}
+footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);font-family:var(--font-data);font-size:.78rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
+
+
+/* --- etkileşimli demolar --- */
+.demo{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:20px;display:flex;flex-direction:column;gap:16px}
+.demo-head{display:flex;flex-direction:column;gap:6px;max-width:var(--measure)}
+.demo-head p{color:var(--muted);font-size:.97rem}
+.demo-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:20px;align-items:center}
+.demo-body>*{min-width:0}
+.sky{background:var(--canvas-bg);border-radius:4px;width:100%;aspect-ratio:1;display:block}
+svg.plot{width:100%;height:auto;display:block;font-family:var(--font-data);font-size:11px}
+svg.plot .ax{stroke:var(--line)} svg.plot .grid{stroke:var(--line);stroke-dasharray:2 3}
+svg.plot .tx{fill:var(--muted)} svg.plot .tx-ink{fill:var(--ink)}
+svg.plot .curve{fill:none;stroke:var(--cherenkov);stroke-width:2.2}
+svg.plot .hot{fill:var(--signal)} svg.plot .cold{fill:var(--muted);opacity:.45}
+svg.plot .mark{stroke:var(--ink);stroke-width:1.2;stroke-dasharray:3 3}
+svg.plot .accent{fill:var(--cherenkov)} svg.plot .sig{fill:var(--signal)} svg.plot .ink{fill:var(--ink)}
+.controls{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;font-size:.92rem}
+.controls label{display:flex;align-items:center;gap:10px;color:var(--muted)}
+.controls input[type=range]{width:min(260px,60vw);accent-color:var(--cherenkov)}
+.controls select,.controls button,.chip-btn{font:inherit;font-size:.88rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:6px 10px;cursor:pointer}
+.controls button:hover,.chip-btn:hover{border-color:var(--cherenkov)}
+.chip-btn[aria-pressed="true"]{background:var(--cherenkov);border-color:var(--cherenkov);color:var(--surface)}
+.readout{font-family:var(--font-data);font-size:.88rem;line-height:1.55;background:var(--bg);border-radius:4px;padding:10px 12px}
+.readout b{color:var(--cherenkov)}
+.scroll-x{overflow-x:auto}
+.scroll-x svg{min-width:600px}
+/* sözlük */
+.term{border-bottom:1px dotted var(--cherenkov);cursor:help}
+.term:focus-visible{outline:2px solid var(--cherenkov);outline-offset:2px}
+#tip{position:fixed;z-index:20;max-width:min(280px,calc(100vw - 32px));background:var(--ink);color:var(--bg);font-family:var(--font-body);font-size:.88rem;line-height:1.45;padding:9px 12px;border-radius:5px;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+/* büyütme */
+figure.plate img.zoomable{cursor:zoom-in}
+dialog#lb{border:0;padding:0;background:var(--surface);color:var(--ink);max-width:96vw;max-height:92vh;border-radius:6px;overflow:auto}
+dialog#lb::backdrop{background:rgba(6,12,20,.75)}
+dialog#lb .lb-bar{position:sticky;top:0;left:0;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--line);font-family:var(--font-data);font-size:.8rem;color:var(--muted)}
+dialog#lb .lb-bar button{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:5px 10px;cursor:pointer}
+dialog#lb .lb-img{background:#fff;padding:8px}
+dialog#lb img{display:block;width:1500px;max-width:none;height:auto}
+.zoom-pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:center}
+.zoom-pair>*{min-width:0}
+@media (max-width:820px){.demo-body,.zoom-pair{grid-template-columns:minmax(0,1fr)}}
+
+@media (max-width:820px){
+  header.hero{grid-template-columns:minmax(0,1fr);padding-block:32px 28px}
+  .event{aspect-ratio:4/3}
+  .figures{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pair,.nulls{grid-template-columns:minmax(0,1fr)}
+  .bar,.axis{grid-template-columns:minmax(0,7.5rem) minmax(0,1fr) 3.8rem;gap:8px}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header class="hero">
+  <div class="hero-text">
+    <span class="eyebrow">IceCube 10 yıllık açık veri · 2008–2018</span>
+    <h1>Buzun içinden gelen nötrinoların kaynağını aramak</h1>
+    <p class="lede">Güney Kutbu'ndaki IceCube dedektörünün halka açık verisiyle sıfırdan yazılmış bir nokta kaynak analizi. IceCube'un yayımladığı NGC 1068 ve TXS 0506+056 sonuçları bağımsız olarak yeniden üretildi.</p>
+    <span class="byline">Musab Bera Mansur Oluğ · AYBÜ Matematik, 1. sınıf · Fizik 1 projesi</span>
+  </div>
+  <figure class="event" aria-label="IceCube dedektöründen geçen bir müon izinin şematik olay görüntüsü">
+    <canvas id="ev" width="800" height="1000"></canvas>
+    <figcaption>
+      <span class="timebar">erken <i></i> geç</span>
+      <button id="replay" type="button">İzi tekrar oynat</button>
+    </figcaption>
+  </figure>
+</header>
+
+<div class="figures" role="list">
+  <div role="listitem"><b>1,13 M</b><span>müon izi olayı, 10 yıl, 10 dedektör sezonu</span></div>
+  <div role="listitem"><b>3,9σ</b><span>NGC 1068 yönünde nötrino fazlalığı</span></div>
+  <div role="listitem"><b>4,1σ</b><span>TXS 0506+056'nın 2014–15 patlaması</span></div>
+  <div role="listitem"><b>15</b><span>aşama: sayımdan tam gökyüzü taramasına</span></div>
+</div>
+
+<section id="soru">
+  <div class="col">
+    <span class="eyebrow">Soru</span>
+    <h2>Yüksek enerjili nötrinolar nereden geliyor?</h2>
+    <p>Nötrinolar neredeyse hiçbir şeyle etkileşmez; manyetik alanda sapmaz, tozda soğurulmaz. Bu yüzden geldikleri yönü doğrudan gösterirler. IceCube, bir kilometreküp buzun içine yerleştirilmiş 5160 ışık sensöründen oluşuyor. Bir müon nötrinosu buzda etkileşince oluşan müon, arkasında mavi Çerenkov ışığından bir iz bırakıyor. Bu izden nötrinonun yönü ve enerjisi tahmin ediliyor.</p>
+    <p>On yılda yaklaşık 1,1 milyon iz kaydedildi. Bunların neredeyse tamamı atmosferde üretilen arka plan. Proje, bu yığının içinde belirli bir yöne yığılan küçük bir fazlalığı istatistik ile bulmaya çalışıyor.</p>
+  </div>
+</section>
+
+<section id="yontem">
+  <div class="col">
+    <span class="eyebrow">Yöntem</span>
+    <h2>Unbinned likelihood: her olay bir oy veriyor</h2>
+    <p>Gökyüzünü kutulara bölmek yerine her olay için iki olasılık hesaplanıyor: kaynaktan gelmiş olma olasılığı (S) ve arka plandan gelmiş olma olasılığı (B). Kaynaktan gelen olay sayısı nₛ ve enerji spektrumunun eğimi γ, bu olasılıkları en iyi açıklayacak şekilde ayarlanıyor.</p>
+  </div>
+  <div class="formula">
+    <span>L(nₛ, γ) = ∏ᵢ [ (nₛ/N)·Sᵢ(γ) + (1 − nₛ/N)·Bᵢ ]</span>
+    <span>TS = 2 · ln [ L(n̂ₛ, γ̂) / L(nₛ = 0) ]</span>
+    <small>Sᵢ: olayın kaynağa açısal uzaklığına göre 2B Gauss (her olayın kendi açısal hatasıyla) × enerji olasılığı. Bᵢ: veriden, sağ açıklık karıştırılarak. TS ne kadar büyükse arka plan açıklaması o kadar kötü.</small>
+  </div>
+  <div class="demo" id="demo-lh">
+    <div class="demo-head">
+      <span class="eyebrow">Dene · likelihood</span>
+      <h3>Kaynaktan kaç olay geldi? Kaydırıcıyla sen tahmin et</h3>
+      <p>16° × 16°'lik sahte bir gökyüzü parçası. Ortadaki halka kaynağın yönü. nₛ'yi değiştirdikçe her olayın "kaynaktan gelmiş olma" olasılığı değişiyor: mavi olaylar kaynağa oy veriyor. Sağdaki eğri TS'nin nₛ ile nasıl değiştiğini gösteriyor; tepe noktası en iyi tahmin.</p>
+    </div>
+    <div class="demo-body">
+      <canvas class="sky" id="lh-sky" width="560" height="560" aria-label="Sahte gökyüzü parçası: arka plan olayları ve ortada kaynak"></canvas>
+      <svg class="plot" id="lh-curve" viewBox="0 0 440 300" role="img" aria-label="TS'nin nₛ'ye göre eğrisi"></svg>
+    </div>
+    <div class="controls">
+      <label for="lh-ns">nₛ <input type="range" id="lh-ns" min="0" max="80" step="0.5" value="0"></label>
+      <label for="lh-inj">Gerçek sinyal <select id="lh-inj"><option value="0">0 olay</option><option value="10">10 olay</option><option value="25" selected>25 olay</option><option value="50">50 olay</option></select></label>
+      <button type="button" id="lh-new">Yeni gökyüzü</button>
+    </div>
+    <p class="readout" id="lh-read" aria-live="polite"></p>
+  </div>
+  <div class="col">
+    <p>Anlamlılık için formüllere güvenmek yerine, olayların sağ açıklıkları rastgele karıştırılıp binlerce sahte gökyüzü üretildi. Gerçek TS'nin bu sahte gökyüzlerinin kaçından büyük olduğu doğrudan p-değerini veriyor. Bu olasılık genelde σ (sigma) cinsinden söyleniyor:</p>
+  </div>
+  <div class="demo" id="sigma-ladder">
+    <div class="demo-head">
+      <span class="eyebrow">σ ölçeği</span>
+      <h3>Bir sonuç kaç sigma ise, şans eseri çıkma olasılığı o kadar küçük</h3>
+      <p>Alttaki satırlar aynı olasılığı yazı turayla anlatıyor: düzgün bir parayı kaç kere üst üste tura getirmek o kadar şaşırtıcı. Fizikte "keşif" demek için 5σ isteniyor.</p>
+    </div>
+    <div class="scroll-x"><svg class="plot" id="sig-svg" viewBox="0 0 760 190" role="img" aria-label="Sigma ölçeği ve bu projenin sonuçlarının yeri"></svg></div>
+  </div>
+  <div class="col">
+    <p>Proje aşağıdaki sırayla ilerledi:</p>
+  </div>
+  <ol class="stages">
+    <li><span class="n">02</span><div><b>Sayım + Monte Carlo</b><span>Kaynak etrafında olay say, beklenenle karşılaştır</span></div></li>
+    <li><span class="n">03</span><div><b>Likelihood ve TS</b><span>nₛ uyumu, profil, p-değeri</span></div></li>
+    <li><span class="n">05</span><div><b>Hassasiyet ve akı</b><span>Etkin alan ile nₛ → E²Φ</span></div></li>
+    <li><span class="n">06</span><div><b>Stacking</b><span>4 kaynağın ortak testi</span></div></li>
+    <li><span class="n">07</span><div><b>Gökyüzü taraması</b><span>Kuzey gökyüzünde her nokta</span></div></li>
+    <li><span class="n">08</span><div><b>Zaman bağımlı arama</b><span>Gauss patlama taraması</span></div></li>
+    <li><span class="n">09</span><div><b>Enerji terimi</b><span>Spektral eğim γ uyumu</span></div></li>
+    <li><span class="n">10</span><div><b>Fermi blazarları</b><span>100 gama ışını kaynağı</span></div></li>
+    <li><span class="n">11</span><div><b>Paralel hesap</b><span>12 iş parçacığı, post-trial</span></div></li>
+    <li><span class="n">12</span><div><b>Sezonlu model</b><span>Her dedektör sezonu için ayrı tepki</span></div></li>
+    <li><span class="n">13</span><div><b>Enerjili tarama</b><span>Bakış-başka-yerde düzeltmesi</span></div></li>
+    <li><span class="n">14</span><div><b>TXS önceden pencere</b><span>2018 makalesinin penceresi</span></div></li>
+    <li><span class="n">15</span><div><b>Sağlamlık</b><span>Sistematik testler</span></div></li>
+    <li><span class="n">16</span><div><b>Güney gökyüzü</b><span>Tam gökyüzü haritası</span></div></li>
+    <li><span class="n">17</span><div><b>Gökada düzlemi</b><span>Yaygın kaynak şablonu</span></div></li>
+  </ol>
+</section>
+
+<section id="harita">
+  <div class="col">
+    <span class="eyebrow">Sonuç 1 · Tam gökyüzü</span>
+    <h2>En sıcak kuzey noktası NGC 1068'in yanında çıktı</h2>
+    <p>Gökyüzündeki her noktada likelihood uyumu yapıldı. Kuzeyin en sıcak noktası 40,87°, −0,5° koordinatında; IceCube'un 2020'de bildirdiği 40,9°, −0,3° noktasıyla neredeyse aynı yer. Gökyüzü çok yerde arandığı için bu noktanın tek başına anlamlılığı (5,4σ) yanıltıcı. Aynı tarama 100 karışık gökyüzüne de uygulandığında 2'sinde daha sıcak bir nokta bulundu; düzeltilmiş anlamlılık yaklaşık 1,9σ.</p>
+  </div>
+  <figure class="plate">
+    <div class="img"><img class="zoomable" id="map-img" tabindex="0" src="img/gok.webp" alt="Tüm gökyüzü yerel p-değeri haritası; NGC 1068, TXS 0506+056, PKS 1424+240 ve GB6 J1542+6129 işaretli" width="1500" height="705" loading="lazy"></div>
+    <figcaption><b>Tüm gökyüzü, yön + enerji, sezonlu model.</b> Renk −log₁₀(yerel p). Mavi halkalar: önceden seçilen dört kaynak. Kesikli çizgi: Gökada düzlemi. En alttaki parlak şerit güney kutbu kenarındaki kenar etkisi. Tam boy görmek için haritaya tıkla.</figcaption>
+  </figure>
+  <div class="zoom-pair">
+    <figure class="plate">
+      <svg class="plot" id="zoom-svg" viewBox="0 0 540 500" role="img" aria-label="NGC 1068 çevresinin yakın planı: en sıcak noktalar ve konum kaydırma testleri"></svg>
+    </figure>
+    <div class="col">
+      <span class="eyebrow">Yakın plan · NGC 1068 çevresi</span>
+      <h3>En sıcak nokta kaynağın yarım derece güneydoğusunda</h3>
+      <p>Haritada tek piksel görünen bölge burada 1° × 1°'lik bir pencerede. NGC 1068'in yanındaki dört nokta, kaynak konumunun 0,2° kaydırıldığı testler; yanlarındaki sayılar o konumda bulunan anlamlılık.</p>
+      <p>Konum en sıcak noktaya doğru kaydırılınca anlamlılık 4,3–4,4σ'ya çıkıyor, ters yöne kaydırılınca 2,8–3,3σ'ya düşüyor. Sağlamlık bölümündeki konum duyarlılığının nedeni bu.</p>
+    </div>
+  </div>
+  <div class="demo" id="demo-le">
+    <div class="demo-head">
+      <span class="eyebrow">Dene · bakış-başka-yerde</span>
+      <h3>Çok yere bakınca şans eseri parlak nokta bulmak kolaylaşıyor</h3>
+      <p>Hiç kaynak olmayan, tamamen rastgele 2000 gökyüzü. Her gökyüzünde kaç noktaya baktığını sen seç. Grafik, her gökyüzündeki en parlak noktanın yerel anlamlılığını gösteriyor.</p>
+    </div>
+    <div class="controls" role="group" aria-label="Bakılan nokta sayısı">
+      <span style="color:var(--muted)">Bakılan nokta:</span>
+      <button type="button" class="chip-btn" data-k="1" aria-pressed="true">1</button>
+      <button type="button" class="chip-btn" data-k="10" aria-pressed="false">10</button>
+      <button type="button" class="chip-btn" data-k="100" aria-pressed="false">100</button>
+      <button type="button" class="chip-btn" data-k="1000" aria-pressed="false">1 000</button>
+      <button type="button" class="chip-btn" data-k="10000" aria-pressed="false">10 000</button>
+    </div>
+    <svg class="plot" id="le-hist" viewBox="0 0 760 260" role="img" aria-label="Rastgele gökyüzlerinde en parlak noktanın yerel anlamlılık dağılımı"></svg>
+    <p class="readout" id="le-read" aria-live="polite"></p>
+    <p style="max-width:var(--measure);font-size:.97rem">Gerçek taramada da aynısı oldu. Kuzeyin en sıcak noktası tek başına 5,4σ; ama aynı tarama karışık gökyüzlerinde de yapılınca 100 gökyüzünün 2'sinde daha sıcak bir nokta çıktı. Düzeltilmiş anlamlılık bu yüzden yaklaşık 1,9σ. NGC 1068'in 3,9σ'sı ise geçerli, çünkü o kaynak taramadan önce seçilmişti.</p>
+  </div>
+</section>
+<dialog id="lb" aria-label="Tüm gökyüzü haritası, tam boy">
+  <div class="lb-bar"><span>Tüm gökyüzü haritası · kaydırarak gez</span><button type="button" id="lb-close">Kapat</button></div>
+  <div class="lb-img"><img src="img/gok.webp" alt="Tüm gökyüzü haritası, tam boy" width="1500" height="705"></div>
+</dialog>
+<div id="tip" role="tooltip" hidden></div>
+
+<section id="ngc">
+  <div class="pair">
+    <div class="col">
+      <span class="eyebrow">Sonuç 2 · NGC 1068</span>
+      <h2>Bir Seyfert gökadasından yaklaşık 50 nötrino</h2>
+      <p>Önceden seçilmiş NGC 1068 yönünde en iyi uyum <span class="mono">nₛ = 49,6</span> olay ve <span class="mono">γ = 3,2</span>. IceCube'un 2020 sonucu <span class="mono">nₛ = 50,4</span>, <span class="mono">γ = 3,2</span>. Yerel anlamlılık 3,94σ.</p>
+      <p>Dik bir spektrum (γ ≈ 3) gama ışınlarında parlak olmayan, yoğun bir çekirdekten gelen nötrinolarla uyumlu. IceCube 2022'de daha iyi işlenmiş veriyle bu kaynağı 4,2σ ile ilan etti.</p>
+    </div>
+    <figure class="plate">
+      <div class="img"><img src="img/ngc.webp" alt="NGC 1068 için ns ve gamma güven bölgeleri" width="900" height="697" loading="lazy"></div>
+      <figcaption><b>Güven bölgeleri.</b> Koyu %68, açık %95. Yıldız en iyi uyum.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="txs">
+  <div class="col">
+    <span class="eyebrow">Sonuç 3 · TXS 0506+056</span>
+    <h2>Bir blazarın 2014–15 patlaması yeniden görüldü</h2>
+    <p>2017'de IceCube-170922A olayı bu blazara işaret edince IceCube eski veriye döndü ve 2014–15'te yaklaşık 5 ay süren bir nötrino patlaması buldu. Aynı zaman penceresi bu projede önceden sabitlenip test edildi: <span class="mono">nₛ ≈ 11</span>, <span class="mono">γ = 2,3</span>, kutu pencerede 4,1σ. Makaledeki değerler <span class="mono">nₛ = 13 ± 5</span>, <span class="mono">γ = 2,1 ± 0,2</span>.</p>
+  </div>
+  <figure class="plate">
+    <div class="img"><img src="img/txs.webp" alt="TXS 0506+056 yönünde 1 derece içindeki olayların zamana göre dağılımı" width="1400" height="565" loading="lazy"></div>
+    <figcaption><b>Kaynağın 1° çevresindeki olaylar.</b> Dikey eksen her olayın yön × enerji kanıtı. Pembe bant 2018 makalesinin penceresi, turuncu çizgi 2017 uyarı olayı.</figcaption>
+  </figure>
+</section>
+
+<section id="karsilastirma">
+  <div class="col">
+    <span class="eyebrow">Karşılaştırma</span>
+    <h2>IceCube'un yayımladığı sonuçlarla yan yana</h2>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Analiz</th><th>Bu proje</th><th>IceCube</th></tr></thead>
+      <tbody>
+        <tr><td>NGC 1068 · nₛ / γ<span class="ref">PRL 124, 051103 (2020)</span></td><td class="num">49,6 / 3,2</td><td class="num">50,4 / 3,2</td></tr>
+        <tr><td>NGC 1068 · yerel anlamlılık</td><td class="num">3,94σ</td><td class="num">≈4,1σ</td></tr>
+        <tr><td>Kuzey en sıcak nokta (RA, Dec)</td><td class="num">40,87°, −0,5°</td><td class="num">40,9°, −0,3°</td></tr>
+        <tr><td>En sıcak nokta · yerel / düzeltilmiş</td><td class="num">5,40σ / ≈1,9σ</td><td class="num">4,96σ / 1,29σ</td></tr>
+        <tr><td>TXS 0506+056 2014–15 patlaması<span class="ref">Science 361, 147 (2018)</span></td><td class="num">4,1σ · γ 2,3 · nₛ ≈ 11</td><td class="num">3,5σ · γ 2,1 · nₛ 13</td></tr>
+        <tr><td>Güney gökyüzü taraması</td><td class="num">sıfır sonuç<span class="chip null">tutarlı</span></td><td class="num">sıfır sonuç</td></tr>
+        <tr><td>Gökada düzlemi, iz olayları<span class="ref">Science 380, 1338 (2023)</span></td><td class="num">0,44σ<span class="chip null">tutarlı</span></td><td class="num">izlerde sıfır; kaskadlarla 4,5σ</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="saglamlik">
+  <div class="col">
+    <span class="eyebrow">Sağlamlık</span>
+    <h2>Sonuç analiz seçimlerine değil, konuma duyarlı</h2>
+    <p>Olay penceresi, arka plan histogramı, enerji binleri ve açısal hata ölçeği değiştirildiğinde NGC 1068 3,85–4,2σ arasında kalıyor. Kaynak konumu 0,2° kaydırıldığında ise 2,8–4,4σ arasında oynuyor. Bunun nedeni en sıcak noktanın NGC 1068'den yaklaşık 0,5° uzakta olması; analizin en büyük sistematik belirsizliği bu.</p>
+  </div>
+  <div class="bars" id="bars" aria-label="NGC 1068 anlamlılığının farklı analiz seçimleri altındaki değerleri"></div>
+  <div class="legend"><span><i style="background:var(--ink)"></i>varsayılan</span><span><i style="background:var(--cherenkov)"></i>analiz seçimi</span><span><i style="background:var(--signal)"></i>konum kaydırma</span></div>
+</section>
+
+<section id="sifir">
+  <div class="col">
+    <span class="eyebrow">Sıfır sonuçlar</span>
+    <h2>Bulunmayanlar da beklenen yerde</h2>
+  </div>
+  <div class="nulls">
+    <div>
+      <h3>Güney gökyüzü</h3>
+      <span class="big-stat">27 / 50</span>
+      <p>Güneyin en sıcak noktası (Dec −81,5°) tek başına 5σ gibi görünüyor ama 50 karışık gökyüzünün 27'sinde daha sıcak bir nokta var. Düzeltilmiş anlamlılık yaklaşık 0σ. Nokta güney kutbu kenarında ve kenar etkisi olarak yorumlandı.</p>
+    </div>
+    <div>
+      <h3>Gökada düzlemi</h3>
+      <span class="big-stat">0,44σ</span>
+      <p>Samanyolu düzlemi boyunca yaygın bir şablon test edildi. Sonuç sıfır. Bu beklenen bir durum: düzlemin parlak kısmı güney gökyüzünde ve iz olayları orada zayıf. IceCube düzlemi 2023'te kaskad olaylarıyla gördü.</p>
+    </div>
+  </div>
+  <figure class="plate">
+    <div class="img"><img src="img/gal.webp" alt="Gökada düzlemi şablonu ve IceCube iz kabulü ile çarpılmış hali" width="1200" height="304" loading="lazy"></div>
+    <figcaption><b>Solda</b> şablonun ürettiği nötrino dağılımı, <b>sağda</b> IceCube'un iz olaylarıyla görebildiği kısmı.</figcaption>
+  </figure>
+</section>
+
+<section id="sinir">
+  <div class="col">
+    <span class="eyebrow">Sınırlamalar ve sonraki adım</span>
+    <h2>Neyi iddia edemiyoruz</h2>
+    <ul class="plain">
+      <li>Açık veri, IceCube'un iç analizlerinden daha kaba dedektör tepki tabloları içeriyor; bu yüzden sayılar birebir değil, yakın.</li>
+      <li>Karışık gökyüzü sayısı (100 ve 50) post-trial değerleri kabaca belirliyor; daha fazla deneme hata payını küçültür.</li>
+      <li>NGC 1068 sonucu kaynak konumuna duyarlı; daha iyi açısal çözünürlük bu belirsizliği azaltır.</li>
+      <li>Sonraki adım: aynı kodu IceCube'un 2008–2022 dönemini kapsayan yeni IceTracks-DR2 verisine uygulamak.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="kaynaklar">
+  <div class="col">
+    <span class="eyebrow">Kaynaklar</span>
+    <ol class="refs">
+      <li>IceCube Collaboration, <i>Time-integrated neutrino source searches with 10 years of IceCube data</i>, Phys. Rev. Lett. 124, 051103 (2020).</li>
+      <li>IceCube Collaboration, <i>Neutrino emission from the direction of the blazar TXS 0506+056 prior to the IceCube-170922A alert</i>, Science 361, 147 (2018).</li>
+      <li>IceCube Collaboration, <i>Evidence for neutrino emission from the nearby active galaxy NGC 1068</i>, Science 378, 538 (2022).</li>
+      <li>IceCube Collaboration, <i>Observation of high-energy neutrinos from the Galactic plane</i>, Science 380, 1338 (2023).</li>
+      <li>J. Braun et al., <i>Methods for point source analysis in high energy neutrino telescopes</i>, Astropart. Phys. 29, 299 (2008).</li>
+      <li>IceCube 10 yıllık nokta kaynak verisi, Harvard Dataverse, doi:10.7910/DVN/VKL316.</li>
+    </ol>
+  </div>
+</section>
+
+<footer>
+  <span>Python · NumPy · SciPy · Astropy · Matplotlib</span>
+  <span>Kod: src/icecube_ps.py + 15 notebook</span>
+</footer>
+</div>
+
+<script>
+/* ---------- sağlamlık çubukları ---------- */
+(function(){
+  const rows=[
+    ["Varsayılan",3.94,"def"],["Olay penceresi 5°",3.85],["Olay penceresi 15°",3.95],
+    ["Arka plan 50 kutu",3.89],["Arka plan 200 kutu",3.88],["Enerji dilimi 0,5",4.19],
+    ["IC40 sezonu hariç",3.88],["Açısal hata ×0,9",3.89],["Açısal hata ×1,1",3.99],
+    ["Konum RA +0,2°",4.31,"pos"],["Konum RA −0,2°",2.78,"pos"],
+    ["Konum Dec +0,2°",3.31,"pos"],["Konum Dec −0,2°",4.43,"pos"]];
+  const max=5, ref=3.94, el=document.getElementById('bars');
+  const pct=v=>(v/max*100).toFixed(2)+'%';
+  let h='';
+  for(const [l,v,c] of rows){
+    h+=`<div class="bar ${c||''}"><span class="lab">${l}</span><span class="track"><span class="fill" style="width:${pct(v)}"></span><span class="ref-line" style="left:${pct(ref)}"></span></span><span class="v">${v.toFixed(2).replace('.',',')}σ</span></div>`;
+  }
+  h+=`<div class="axis"><span></span><span class="ticks">${[0,1,2,3,4,5].map(t=>`<span style="left:${pct(t)}">${t}σ</span>`).join('')}</span><span></span></div>`;
+  el.innerHTML=h;
+})();
+
+/* ---------- hero: IceCube olay görüntüsü ---------- */
+(function(){
+  const cv=document.getElementById('ev'), ctx=cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  // dizeleri (string) perspektifli bir ızgaraya yerleştir: 8 sıra × 9 sütun, 60 DOM/dize
+  let seed=7; const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+  const strings=[];
+  for(let r=0;r<8;r++)for(let c=0;c<9;c++){
+    const depth=r/7;                         // 0 ön, 1 arka
+    const sc=1-depth*0.45;
+    const x=W/2+(c-4+(r%2)*0.5)*W*0.105*sc;
+    const top=H*0.10+depth*H*0.06, bot=H*0.90-depth*H*0.06;
+    strings.push({x,top,bot,sc,depth});
+  }
+  strings.sort((a,b)=>b.depth-a.depth);
+  const NDOM=40;
+  // müon izi: sağ üstten sol alta
+  const P0={x:W*0.86,y:H*0.04}, P1={x:W*0.12,y:H*0.98};
+  const hits=[];
+  for(const s of strings){
+    for(let k=0;k<NDOM;k++){
+      const y=s.top+(s.bot-s.top)*k/(NDOM-1);
+      // ize olan uzaklık
+      const dx=P1.x-P0.x, dy=P1.y-P0.y, L=Math.hypot(dx,dy);
+      const t=((s.x-P0.x)*dx+(y-P0.y)*dy)/(L*L);
+      const px=P0.x+t*dx, py=P0.y+t*dy;
+      const d=Math.hypot(s.x-px,y-py)/s.sc + s.depth*90;
+      if(d<150 && t>0 && t<1 && rnd()<Math.exp(-d/55)){
+        hits.push({x:s.x,y,t,q:Math.exp(-d/40)*(0.6+rnd()*0.8),sc:s.sc});
+      }
+    }
+  }
+  const css=getComputedStyle(document.documentElement);
+  function hue(t){ return `hsl(${(t*265).toFixed(0)},95%,58%)`; } // kırmızı erken → mor geç
+  function draw(prog){
+    ctx.fillStyle=css.getPropertyValue('--canvas-bg').trim()||'#0d1826';
+    ctx.fillRect(0,0,W,H);
+    for(const s of strings){
+      ctx.strokeStyle=`rgba(160,185,215,${0.10+0.12*(1-s.depth)})`;
+      ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(s.x,s.top);ctx.lineTo(s.x,s.bot);ctx.stroke();
+      ctx.fillStyle=`rgba(170,195,225,${0.18+0.2*(1-s.depth)})`;
+      for(let k=0;k<NDOM;k++){const y=s.top+(s.bot-s.top)*k/(NDOM-1);ctx.fillRect(s.x-1,y-1,2,2);}
+    }
+    // iz
+    const ex=P0.x+(P1.x-P0.x)*prog, ey=P0.y+(P1.y-P0.y)*prog;
+    ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=1.5;ctx.setLineDash([6,6]);
+    ctx.beginPath();ctx.moveTo(P0.x,P0.y);ctx.lineTo(ex,ey);ctx.stroke();ctx.setLineDash([]);
+    for(const h of hits){
+      if(h.t>prog) continue;
+      const r=(4+h.q*22)*h.sc;
+      ctx.fillStyle=hue(h.t);ctx.globalAlpha=0.9;
+      ctx.beginPath();ctx.arc(h.x,h.y,r,0,Math.PI*2);ctx.fill();
+    }
+    ctx.globalAlpha=1;
+    ctx.fillStyle='rgba(200,215,232,.75)';ctx.font='22px "JetBrains Mono", monospace';
+    ctx.fillText('ν_μ → μ  ·  Çerenkov ışığı',28,46);
+  }
+  draw(1); // durgun hal: tam olay
+  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let raf=null;
+  function play(){
+    cancelAnimationFrame(raf);
+    const t0=performance.now(), dur=2600;
+    const step=now=>{const p=Math.min(1,(now-t0)/dur);draw(p);if(p<1)raf=requestAnimationFrame(step);};
+    raf=requestAnimationFrame(step);
+  }
+  document.getElementById('replay').addEventListener('click',play);
+  if(!reduce) setTimeout(play,350);  // otomatik oynatma sadece hareket azaltma kapalıysa; düğme her zaman oynatır
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>draw(1));
+})();
+
+/* ---------- yardımcılar ---------- */
+const fmt=(v,d=1)=>v.toFixed(d).replace('.',',');
+function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function tok(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+
+/* ---------- demo 1: likelihood ---------- */
+(function(){
+  const cv=document.getElementById('lh-sky'), ctx=cv.getContext('2d'), svg=document.getElementById('lh-curve');
+  const slider=document.getElementById('lh-ns'), inj=document.getElementById('lh-inj'), read=document.getElementById('lh-read');
+  const HALF=8, NBG=400, B=1/(2*HALF)**2, NSMAX=80;
+  let ev=[], curve=[], best={ns:0,ts:0}, nTrue=25;
+  function make(){
+    nTrue=+inj.value; ev=[];
+    for(let i=0;i<NBG;i++) ev.push({x:(Math.random()*2-1)*HALF,y:(Math.random()*2-1)*HALF,s:0.4+Math.random()*1.0});
+    for(let i=0;i<nTrue;i++){const s=0.4+Math.random()*1.0;ev.push({x:gauss()*s,y:gauss()*s,s});}
+    for(const e of ev){const r2=e.x*e.x+e.y*e.y;e.S=Math.exp(-r2/(2*e.s*e.s))/(2*Math.PI*e.s*e.s);}
+    const N=ev.length; curve=[]; best={ns:0,ts:0};
+    for(let ns=0;ns<=NSMAX;ns+=0.5){
+      let t=0; for(const e of ev) t+=Math.log(ns/N*(e.S/B-1)+1);
+      t*=2; curve.push({ns,ts:t}); if(t>best.ts) best={ns,ts:t};
+    }
+  }
+  function tsAt(ns){return curve[Math.round(ns*2)].ts;}
+  function drawSky(ns){
+    const W=cv.width, k=W/(2*HALF), N=ev.length, f=ns/N;
+    ctx.fillStyle=tok('--canvas-bg')||'#0d1826'; ctx.fillRect(0,0,W,W);
+    ctx.strokeStyle='rgba(255,255,255,.12)'; ctx.lineWidth=1;
+    for(let g=-HALF;g<=HALF;g+=4){ctx.beginPath();ctx.moveTo((g+HALF)*k,0);ctx.lineTo((g+HALF)*k,W);ctx.stroke();ctx.beginPath();ctx.moveTo(0,(g+HALF)*k);ctx.lineTo(W,(g+HALF)*k);ctx.stroke();}
+    const acc='#7ea2ff';
+    for(const e of ev){
+      const p= f>0 ? f*e.S/(f*e.S+(1-f)*B) : 0;
+      const X=(e.x+HALF)*k, Y=(HALF-e.y)*k;
+      ctx.globalAlpha=1; ctx.fillStyle='rgba(170,190,215,.55)';
+      ctx.beginPath();ctx.arc(X,Y,3,0,7);ctx.fill();
+      if(p>0.02){ctx.globalAlpha=Math.min(1,p*1.1);ctx.fillStyle=acc;ctx.beginPath();ctx.arc(X,Y,3+p*4,0,7);ctx.fill();
+        if(p>0.5){ctx.globalAlpha=0.35;ctx.strokeStyle=acc;ctx.beginPath();ctx.arc(X,Y,e.s*k,0,7);ctx.stroke();}}
+    }
+    ctx.globalAlpha=1; ctx.strokeStyle='#ff7a6e'; ctx.lineWidth=2; ctx.setLineDash([6,5]);
+    ctx.beginPath();ctx.arc(W/2,W/2,1.5*k,0,7);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='rgba(200,215,232,.8)';ctx.font='18px "JetBrains Mono", monospace';
+    ctx.fillText('kaynak',W/2+1.5*k+6,W/2-6);
+    ctx.fillText(`${ev.length} olay · 16°×16°`,14,W-14);
+  }
+  function drawCurve(ns){
+    const L=46,R=424,T=20,Bm=256, ymax=Math.max(8,Math.ceil(best.ts/5)*5+5), ymin=-ymax*0.25;
+    const x=v=>L+v/NSMAX*(R-L), y=v=>Bm-(Math.max(v,ymin)-ymin)/(ymax-ymin)*(Bm-T);
+    let h='';
+    for(let t=0;t<=ymax;t+=ymax/5){h+=`<line class="grid" x1="${L}" x2="${R}" y1="${y(t)}" y2="${y(t)}"/><text class="tx" x="${L-8}" y="${y(t)+4}" text-anchor="end">${Math.round(t)}</text>`;}
+    for(let n=0;n<=NSMAX;n+=20){h+=`<text class="tx" x="${x(n)}" y="${Bm+18}" text-anchor="middle">${n}</text>`;}
+    h+=`<line class="ax" x1="${L}" x2="${R}" y1="${y(0)}" y2="${y(0)}"/>`;
+    h+=`<text class="tx" x="${R}" y="${Bm+36}" text-anchor="end">nₛ (kaynaktan gelen olay)</text><text class="tx" x="${L-8}" y="${T-6}" text-anchor="start">TS</text>`;
+    h+=`<polyline class="curve" points="${curve.filter(c=>c.ts>=ymin).map(c=>`${x(c.ns).toFixed(1)},${y(c.ts).toFixed(1)}`).join(' ')}"/>`;
+    if(nTrue>0) h+=`<line class="mark" x1="${x(nTrue)}" x2="${x(nTrue)}" y1="${T}" y2="${y(0)}"/><text class="tx" x="${x(nTrue)+4}" y="${T+10}">gerçek ${nTrue}</text>`;
+    h+=`<circle class="hot" cx="${x(best.ns)}" cy="${y(best.ts)}" r="5"/><text class="tx-ink" x="${x(best.ns)}" y="${y(best.ts)-10}" text-anchor="middle">en iyi ${fmt(best.ns)}</text>`;
+    const t=tsAt(ns);
+    h+=`<line x1="${x(ns)}" x2="${x(ns)}" y1="${y(t)}" y2="${y(0)}" stroke="var(--cherenkov)" stroke-width="1.5"/><circle class="accent" cx="${x(ns)}" cy="${y(t)}" r="6"/>`;
+    svg.innerHTML=h;
+  }
+  function update(){
+    const ns=+slider.value, t=tsAt(ns);
+    drawSky(ns); drawCurve(ns);
+    const sig=Math.sqrt(Math.max(best.ts,0));
+    read.innerHTML=`Senin seçimin: nₛ = ${fmt(ns)} → TS = ${fmt(t)}.<br>En iyi tahmin: <b>n̂ₛ = ${fmt(best.ns)}</b>, TS = ${fmt(best.ts)} (yaklaşık ${fmt(sig)}σ). Bu gökyüzüne gerçekte ${nTrue} sinyal olayı koydum.`;
+  }
+  slider.addEventListener('input',update);
+  inj.addEventListener('change',()=>{make();update();});
+  document.getElementById('lh-new').addEventListener('click',()=>{make();update();});
+  make(); slider.value=String(Math.round(best.ns)); update();
+})();
+
+/* ---------- sigma ölçeği ---------- */
+(function(){
+  const svg=document.getElementById('sig-svg');
+  const steps=[{s:1,p:'1/6',t:'≈3'},{s:2,p:'1/44',t:'≈5–6'},{s:3,p:'1/740',t:'≈10'},{s:4,p:'1/31 600',t:'≈15'},{s:5,p:'1/3,5 milyon',t:'≈22'}];
+  const marks=[{s:1.9,l:'gökyüzü en sıcak nokta, düzeltilmiş',y:58,a:'middle',c:'tx'},{s:3.94,l:'NGC 1068 · 3,9σ',y:58,a:'end',c:'tx-ink'},{s:4.14,l:'TXS · 4,1σ',y:58,a:'start',c:'tx-ink'},{s:5,l:'keşif eşiği',y:26,a:'middle',c:'tx'}];
+  const L=110,R=740, x=v=>L+v/5.5*(R-L), Y=100;
+  let h=`<line class="ax" x1="${L}" x2="${R}" y1="${Y}" y2="${Y}" stroke-width="2"/>`;
+  h+=`<text class="tx" x="8" y="${Y+22}">sigma</text><text class="tx" x="8" y="${Y+44}">şans olasılığı</text><text class="tx" x="8" y="${Y+66}">üst üste tura</text>`;
+  for(const st of steps){h+=`<line class="ax" x1="${x(st.s)}" x2="${x(st.s)}" y1="${Y-6}" y2="${Y+6}"/><text class="tx-ink" x="${x(st.s)}" y="${Y+22}" text-anchor="middle" font-weight="600">${st.s}σ</text><text class="tx" x="${x(st.s)}" y="${Y+44}" text-anchor="middle">${st.p}</text><text class="tx" x="${x(st.s)}" y="${Y+66}" text-anchor="middle">${st.t}</text>`;}
+  h+=`<rect x="${x(5)}" y="${Y-4}" width="${R-x(5)}" height="8" class="sig" opacity=".35"/>`;
+  for(const m of marks){const dx=m.a==='end'?-4:m.a==='start'?4:0;
+    h+=`<line x1="${x(m.s)}" x2="${x(m.s)}" y1="${m.y+6}" y2="${Y-2}" stroke="var(--${m.s===5?'signal':'cherenkov'})" stroke-width="1.5"/><circle cx="${x(m.s)}" cy="${Y}" r="5" class="${m.s===5?'sig':'accent'}"/><text class="${m.c}" x="${x(m.s)+dx}" y="${m.y}" text-anchor="${m.a}">${m.l}</text>`;}
+  svg.innerHTML=h;
+})();
+
+/* ---------- yakın plan ---------- */
+(function(){
+  const svg=document.getElementById('zoom-svg');
+  const L=70,T=24,S=400, RA0=41.2, DEC0=0.3;
+  const x=ra=>L+(RA0-ra)*S, y=d=>T+(DEC0-d)*S;
+  const ngc={ra:40.67,dec:-0.013};
+  const shifts=[{ra:40.87,dec:-0.013,s:4.31,dx:-10,a:'end'},{ra:40.47,dec:-0.013,s:2.78,dx:10,a:'start'},{ra:40.67,dec:0.187,s:3.31,dx:10,a:'start'},{ra:40.67,dec:-0.213,s:4.43,dx:10,a:'start'}];
+  let h='';
+  for(let ra=40.2;ra<=41.21;ra+=0.2){h+=`<line class="grid" x1="${x(ra)}" x2="${x(ra)}" y1="${T}" y2="${y(-0.75)}"/><text class="tx" x="${x(ra)}" y="${y(-0.75)+18}" text-anchor="middle">${fmt(ra)}°</text>`;}
+  for(let d=-0.7;d<=0.31;d+=0.2){h+=`<line class="grid" x1="${L}" x2="${L+S}" y1="${y(d)}" y2="${y(d)}"/><text class="tx" x="${L-8}" y="${y(d)+4}" text-anchor="end">${fmt(d)}°</text>`;}
+  h+=`<text class="tx" x="${L+S}" y="${y(-0.75)+38}" text-anchor="end">sağ açıklık RA (sola doğru artar)</text><text class="tx" x="${L-8}" y="${T-8}" text-anchor="start">Dec</text>`;
+  for(const p of shifts){h+=`<line x1="${x(ngc.ra)}" y1="${y(ngc.dec)}" x2="${x(p.ra)}" y2="${y(p.dec)}" stroke="var(--line)" stroke-width="1.5"/>`;}
+  for(const p of shifts){const hi=p.s>3.94;h+=`<circle cx="${x(p.ra)}" cy="${y(p.dec)}" r="6" class="${hi?'accent':'cold'}" ${hi?'':'style="opacity:.8"'}/><text class="${hi?'tx-ink':'tx'}" x="${x(p.ra)+p.dx}" y="${y(p.dec)+4}" text-anchor="${p.a}">${fmt(p.s,2)}σ</text>`;}
+  h+=`<circle cx="${x(ngc.ra)}" cy="${y(ngc.dec)}" r="11" fill="none" stroke="var(--ink)" stroke-width="2"/><text class="tx-ink" x="${x(ngc.ra)+16}" y="${y(ngc.dec)-14}" font-weight="600">NGC 1068 · 3,94σ</text>`;
+  const ic={ra:40.9,dec:-0.3}, me={ra:40.87,dec:-0.5};
+  h+=`<rect x="${x(ic.ra)-6}" y="${y(ic.dec)-6}" width="12" height="12" fill="none" stroke="var(--ink)" stroke-width="1.6"/><text class="tx" x="${x(ic.ra)+12}" y="${y(ic.dec)+4}">IceCube 2020 en sıcak nokta</text>`;
+  h+=`<path d="M${x(me.ra)-7},${y(me.dec)-7}L${x(me.ra)+7},${y(me.dec)+7}M${x(me.ra)+7},${y(me.dec)-7}L${x(me.ra)-7},${y(me.dec)+7}" stroke="var(--signal)" stroke-width="2.6"/><text class="tx-ink" x="${x(me.ra)+12}" y="${y(me.dec)+4}">bu proje en sıcak nokta</text>`;
+  svg.innerHTML=h;
+})();
+
+/* ---------- demo 2: bakış-başka-yerde ---------- */
+(function(){
+  // Acklam ters normal dağılım
+  function invN(p){const a=[-39.69683028665376,220.9460984245205,-275.9285104469687,138.357751867269,-30.66479806614716,2.506628277459239],b=[-54.47609879822406,161.5858368580409,-155.6989798598866,66.80131188771972,-13.28068155288572],c=[-0.007784894002430293,-0.3223964580411365,-2.400758277161838,-2.549732539343734,4.374664141464968,2.938163982698783],d=[0.007784695709041462,0.3224671290700398,2.445134137142996,3.754408661907416];
+    const pl=0.02425;let q,r;
+    if(p<pl){q=Math.sqrt(-2*Math.log(p));return(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+    if(p>1-pl){q=Math.sqrt(-2*Math.log(1-p));return-(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+    q=p-0.5;r=q*q;return(((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);}
+  const svg=document.getElementById('le-hist'), read=document.getElementById('le-read'), btns=[...document.querySelectorAll('#demo-le .chip-btn')];
+  const NT=2000, LO=-2.5, HI=6, BW=0.25;
+  function run(k){
+    const z=[]; for(let i=0;i<NT;i++){const u=Math.random(); // en büyüğün dağılımı: Φ(z)^k = u
+      const p=Math.exp(Math.log(u)/k); z.push(invN(Math.min(p,1-1e-15)));}
+    const nb=Math.round((HI-LO)/BW), bins=new Array(nb).fill(0);
+    for(const v of z){const b=Math.floor((Math.min(Math.max(v,LO),HI-1e-9)-LO)/BW);bins[b]++;}
+    const over=z.filter(v=>v>3).length;
+    const L=50,R=744,T=16,Bm=216, x=v=>L+(v-LO)/(HI-LO)*(R-L), ymax=Math.max(...bins), y=v=>Bm-v/ymax*(Bm-T-14);
+    let h='';
+    bins.forEach((n,i)=>{const v0=LO+i*BW; if(!n)return; h+=`<rect x="${x(v0)+1}" y="${y(n)}" width="${x(v0+BW)-x(v0)-2}" height="${Bm-y(n)}" class="${v0>=3?'hot':'cold'}"><title>${fmt(v0,2)}–${fmt(v0+BW,2)}σ: ${n} gökyüzü</title></rect>`;});
+    h+=`<line class="ax" x1="${L}" x2="${R}" y1="${Bm}" y2="${Bm}"/>`;
+    for(let s=-2;s<=6;s++){h+=`<text class="tx" x="${x(s)}" y="${Bm+18}" text-anchor="middle">${s}σ</text>`;}
+    h+=`<line class="mark" x1="${x(3)}" x2="${x(3)}" y1="${T}" y2="${Bm}"/><text class="tx-ink" x="${x(3)+6}" y="${T+10}">3σ</text>`;
+    h+=`<text class="tx" x="${R}" y="${Bm+38}" text-anchor="end">her gökyüzündeki en parlak noktanın yerel anlamlılığı</text>`;
+    svg.innerHTML=h;
+    const pct=over/NT*100;
+    read.innerHTML=`${String(k).replace(/\B(?=(\d{3})+$)/g,' ')} noktaya bakınca, kaynaksız 2000 gökyüzünün <b>%${fmt(pct,pct<1?2:1)}</b>'inde en parlak nokta 3σ'yı geçti. (Tek noktaya bakınca beklenen: %0,13.)`;
+  }
+  btns.forEach(b=>b.addEventListener('click',()=>{btns.forEach(o=>o.setAttribute('aria-pressed',String(o===b)));run(+b.dataset.k);}));
+  run(1);
+})();
+
+/* ---------- harita büyütme ---------- */
+(function(){
+  const dlg=document.getElementById('lb'), img=document.getElementById('map-img');
+  const open=()=>{try{dlg.showModal();}catch(e){dlg.setAttribute('open','');}};
+  img.addEventListener('click',open);
+  img.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});
+  document.getElementById('lb-close').addEventListener('click',()=>dlg.close?dlg.close():dlg.removeAttribute('open'));
+  dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close();});
+})();
+
+/* ---------- sözlük ---------- */
+(function(){
+  const G=[
+    ['nₛ','Kaynaktan gelen nötrino sayısı. Analizin tahmin ettiği asıl büyüklük.',false],
+    ['γ','Spektral eğim. Akı E⁻ᵞ gibi azalır; γ büyükse kaynak düşük enerjilerde daha parlak, yüksek enerjilerde sönük.',false],
+    ['TS','Test istatistiği. Kaynaklı açıklamanın kaynaksız açıklamadan ne kadar iyi olduğunu ölçer; büyükse arka plan zor açıklıyor.',true],
+    ['Çerenkov','Yüklü bir parçacık bir ortamda ışığın o ortamdaki hızından hızlı gidince yaydığı mavi ışık.',false],
+    ['sağ açıklık','Gökyüzündeki boylam (RA). Dünya döndükçe IceCube her RA\'yı eşit süre görür.',false],
+    ['p-değeri','Hiç kaynak yokken, sadece şansla en az bu kadar güçlü bir sonuç çıkma olasılığı.',false],
+    ['blazar','Jeti doğrudan bize bakan aktif gökada çekirdeği. Gama ışınlarında çok parlaktır.',false],
+    ['Seyfert','Parlak, aktif çekirdekli bir sarmal gökada türü. NGC 1068 bunun en yakın örneklerinden.',false],
+    ['düzeltilmiş anlamlılık','Çok yere bakmanın getirdiği şans etkisi (bakış-başka-yerde) hesaba katılmış anlamlılık. Post-trial da denir.',false],
+    ['spektrum','Nötrinoların enerjiye göre dağılımı.',false],
+    ['kaskad','Elektron ya da tau nötrinosunun buzda bıraktığı top şeklinde ışık. Enerjisi iyi ölçülür ama yönü iz olaylarından çok daha kaba.',false]
+  ];
+  const used=new Set(), isL=c=>!!c&&/\p{L}/u.test(c);
+  const roots=document.querySelectorAll('section h2, section .col p, section .col li, section .nulls p, section figcaption, .demo-head p');
+  for(const root of roots){
+    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+    const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
+    for(let node of nodes){
+      for(const [term,def,full] of G){
+        if(used.has(term)||!node.parentNode||node.parentNode.closest('.term'))continue;
+        const t=node.nodeValue; let i=t.indexOf(term);
+        while(i>=0 && (isL(t[i-1]) || (full && isL(t[i+term.length])))) i=t.indexOf(term,i+1);
+        if(i<0)continue;
+        const after=node.splitText(i); const rest=after.splitText(term.length);
+        const sp=document.createElement('span'); sp.className='term'; sp.tabIndex=0; sp.dataset.def=def; sp.textContent=term;
+        after.replaceWith(sp); used.add(term); node=rest;
+      }
+    }
+  }
+  const tip=document.getElementById('tip');
+  function show(el){tip.textContent=el.dataset.def;tip.hidden=false;
+    const r=el.getBoundingClientRect(), w=tip.offsetWidth, h=tip.offsetHeight;
+    let left=Math.min(Math.max(16,r.left+r.width/2-w/2),window.innerWidth-w-16);
+    let topY=r.top-h-8; if(topY<8) topY=r.bottom+8;
+    tip.style.left=left+'px'; tip.style.top=topY+'px';}
+  const hide=()=>{tip.hidden=true;};
+  document.querySelectorAll('.term').forEach(el=>{
+    el.addEventListener('mouseenter',()=>show(el)); el.addEventListener('mouseleave',hide);
+    el.addEventListener('focus',()=>show(el)); el.addEventListener('blur',hide);
+  });
+  window.addEventListener('scroll',hide,{passive:true});
+})();
+</script>
+</body>
+</html>

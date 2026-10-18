@@ -1,0 +1,14 @@
+# Veri (büyük, ayrıca indirilir)
+data/
+*.pkl
+*.fit
+# Ara sonuçlar
+results/*.npy
+results/*.npz
+# Python / Jupyter
+__pycache__/
+.ipynb_checkpoints/
+.venv/
+*.pyc
+# Claude Code çalışma notları
+CLAUDE.md
